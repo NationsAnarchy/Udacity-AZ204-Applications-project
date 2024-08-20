@@ -1,4 +1,5 @@
 import os
+from sqlalchemy import create_engine, engine
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -19,6 +20,15 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = 'mssql+pyodbc://' + SQL_USER_NAME + ':' + SQL_PASSWORD + '@' + SQL_SERVER + ':1433/' + SQL_DATABASE + '?driver=ODBC+Driver+17+for+SQL+Server'
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    engine = create_engine(SQLALCHEMY_DATABASE_URI)
+
+    try:
+        with engine.connect() as connection:
+            result = connection.execute("SELECT 1")
+            print(result.fetchone())
+    except Exception as e:
+        print(f"Error connecting to database: {e}")
 
     ### Info for MS Authentication ###
     ### As adapted from: https://github.com/Azure-Samples/ms-identity-python-webapp ###
