@@ -13,9 +13,7 @@ from flask_login import current_user, login_user, logout_user, login_required
 from FlaskWebProject.models import User, Post
 import msal
 import uuid
-import logging
 
-logger = logging.getLogger(__name__)
 imageSourceUrl = 'https://'+ app.config['BLOB_ACCOUNT']  + '.blob.core.windows.net/' + app.config['BLOB_CONTAINER']  + '/'
 
 @app.route('/')
@@ -69,11 +67,11 @@ def login():
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user is None or not user.check_password(form.password.data):
-            logger.warning('Invalid sign-in')
+            app.logger.warning('Invalid sign-in')
             flash('Invalid username or password')
             return redirect(url_for('login'))
         login_user(user, remember=form.remember_me.data)
-        logger.info('Successful log-in')
+        app.logger.warning('Successful log-in')
         next_page = request.args.get('next')
         if not next_page or urlparse(next_page).netloc != '':
             next_page = url_for('home')
@@ -87,7 +85,7 @@ def authorized():
     if request.args.get('state') != session.get("state"):
         return redirect(url_for("home"))  # No-OP. Goes back to Index page
     if "error" in request.args:  # Authentication/Authorization failure
-        logger.warning('Failed Microsoft OAuth log-in')
+        app.logger.warning('Failed Microsoft OAuth log-in')
         return render_template("auth_error.html", result=request.args)
     if request.args.get('code'):
         cache = _load_cache()
@@ -99,7 +97,7 @@ def authorized():
         if "error" in result:
             return render_template("auth_error.html", result=result)
         session["user"] = result.get("id_token_claims")
-        logger.info('Successful Microsoft OAuth log-in')
+        app.logger.warning('Successful Microsoft OAuth log-in')
         # Note: In a real app, we'd use the 'name' property from session["user"] below
         # Here, we'll use the admin username for anyone who is authenticated by MS
         user = User.query.filter_by(username="admin").first()
