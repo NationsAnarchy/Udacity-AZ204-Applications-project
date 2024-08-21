@@ -70,8 +70,10 @@ def login():
             app.logger.warning('Invalid sign-in')
             flash('Invalid username or password')
             return redirect(url_for('login'))
+        else:
+            app.logger.info('Successful sign-in')
         login_user(user, remember=form.remember_me.data)
-        app.logger.info('Sucessful log-in')
+        app.logger.info('Successful log-in')
         next_page = request.args.get('next')
         if not next_page or urlparse(next_page).netloc != '':
             next_page = url_for('home')
