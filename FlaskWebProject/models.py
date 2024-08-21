@@ -64,9 +64,9 @@ class Post(db.Model):
                 blob_client.upload_blob(file)
                 if(self.image_path):
                     blob_client.delete_blob(self.image_path)
-            except Exception:
-                flash(Exception)
-            self.image_path =  filename
+            except Exception as e:
+                flash(str(e))
+            self.image_path = filename
         if new:
             db.session.add(self)
         db.session.commit()
