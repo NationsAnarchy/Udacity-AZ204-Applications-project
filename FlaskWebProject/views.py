@@ -66,12 +66,12 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
-        app.logger.warning('Successful log-in')
         if user is None or not user.check_password(form.password.data):
             app.logger.warning('Invalid sign-in')
             flash('Invalid username or password')
             return redirect(url_for('login'))
         login_user(user, remember=form.remember_me.data)
+        app.logger.warning('Successful log-in')
         next_page = request.args.get('next')
         if not next_page or urlparse(next_page).netloc != '':
             next_page = url_for('home')
