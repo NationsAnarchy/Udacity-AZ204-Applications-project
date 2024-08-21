@@ -3,7 +3,7 @@ from FlaskWebProject import app, db, login
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from flask_login import UserMixin
-from azure.storage.blob import BlobServiceClient
+from azure.storage.blob import BlobServiceClient, DeleteSnapshotsOptionType
 import string, random
 from flask import flash
 
@@ -63,7 +63,7 @@ class Post(db.Model):
                 blob_client = container_client.get_blob_client(filename)
                 blob_client.upload_blob(file)
                 if(self.image_path):
-                    blob_client.delete_blob(self.image_path)
+                    blob_client.delete_blob(delete_snapshots_options=DeleteSnapshotsOptionType.INCLUDE_SNAPSHOTS)
             except Exception as e:
                 flash(str(e))
             self.image_path = filename
