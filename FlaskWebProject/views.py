@@ -62,11 +62,11 @@ def post(id):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        app.logger.info('Successful log-in')
         return redirect(url_for('home'))
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
+        app.logger.warning('Successful log-in')
         if user is None or not user.check_password(form.password.data):
             app.logger.warning('Invalid sign-in')
             flash('Invalid username or password')
@@ -85,8 +85,8 @@ def authorized():
     if request.args.get('state') != session.get("state"):
         return redirect(url_for("home"))  # No-OP. Goes back to Index page
     if "error" in request.args:  # Authentication/Authorization failure
-        return render_template("auth_error.html", result=request.args)
         app.logger.warning('Failed Microsoft OAuth log-in')
+        return render_template("auth_error.html", result=request.args)
     if request.args.get('code'):
         cache = _load_cache()
         result = _build_msal_app(cache=cache).acquire_token_by_authorization_code(
@@ -97,12 +97,12 @@ def authorized():
         if "error" in result:
             return render_template("auth_error.html", result=result)
         session["user"] = result.get("id_token_claims")
+        app.logger.warning('Successful Microsoft OAuth log-in')
         # Note: In a real app, we'd use the 'name' property from session["user"] below
         # Here, we'll use the admin username for anyone who is authenticated by MS
         user = User.query.filter_by(username="admin").first()
         login_user(user)
         _save_cache(cache)
-        app.logger.info('Successful Microsoft OAuth log-in')
     return redirect(url_for('home'))
 
 @app.route('/logout')
