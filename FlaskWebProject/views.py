@@ -62,6 +62,7 @@ def post(id):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
+        app.logger.info('Successful log-in')
         return redirect(url_for('home'))
     form = LoginForm()
     if form.validate_on_submit():
@@ -70,10 +71,7 @@ def login():
             app.logger.warning('Invalid sign-in')
             flash('Invalid username or password')
             return redirect(url_for('login'))
-        else:
-            app.logger.info('Successful sign-in')
         login_user(user, remember=form.remember_me.data)
-        app.logger.info('Successful log-in')
         next_page = request.args.get('next')
         if not next_page or urlparse(next_page).netloc != '':
             next_page = url_for('home')
@@ -88,6 +86,7 @@ def authorized():
         return redirect(url_for("home"))  # No-OP. Goes back to Index page
     if "error" in request.args:  # Authentication/Authorization failure
         return render_template("auth_error.html", result=request.args)
+        app.logger.warning('Failed Microsoft OAuth log-in')
     if request.args.get('code'):
         cache = _load_cache()
         result = _build_msal_app(cache=cache).acquire_token_by_authorization_code(
@@ -103,6 +102,7 @@ def authorized():
         user = User.query.filter_by(username="admin").first()
         login_user(user)
         _save_cache(cache)
+        app.logger.info('Successful Microsoft OAuth log-in')
     return redirect(url_for('home'))
 
 @app.route('/logout')
