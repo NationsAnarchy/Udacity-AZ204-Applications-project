@@ -63,8 +63,8 @@ class Post(db.Model):
                 blob_service.create_blob_from_stream(blob_container, filename, file)
                 if(self.image_path):
                     blob_service.delete_blob(blob_container, self.image_path)
-            except Exception:
-                flash(Exception)
+            except Exception as e:
+                flash(str(e))
             self.image_path = filename
         if new:
             db.session.add(self)
